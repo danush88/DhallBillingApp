@@ -1,0 +1,146 @@
+/* Global Reset */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+  
+  /* Page Layout */
+  body {
+    font-family: 'Segoe UI', sans-serif;
+    background-color: #f9f9f9;
+    color: #333;
+    padding: 20px;
+    line-height: 1.6;
+  }
+  
+  /* Navigation Bar */
+  nav {
+    margin-bottom: 20px;
+    background-color: #e0f0ff;
+    padding: 12px 15px;
+    border-radius: 8px;
+  }
+  
+  nav a {
+    margin-right: 15px;
+    text-decoration: none;
+    color: #007bff;
+    font-weight: 600;
+  }
+  
+  nav a:hover {
+    text-decoration: underline;
+  }
+  
+  /* Headings */
+  h2 {
+    margin-bottom: 15px;
+    color: #222;
+  }
+  
+  /* Inputs and Buttons */
+  input, select {
+    padding: 10px;
+    margin: 5px 0 10px 0;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    width: 100%;
+    max-width: 400px;
+  }
+  
+  button {
+    padding: 10px 16px;
+    margin-top: 10px;
+    background-color: #28a745;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 15px;
+    cursor: pointer;
+    margin-right: 10px;
+  }
+  
+  button:hover {
+    background-color: #218838;
+  }
+  
+  /* Tables */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+    background-color: #fff;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  }
+  
+  th, td {
+    padding: 10px;
+    border: 1px solid #ddd;
+    text-align: left;
+  }
+  
+  th {
+    background-color: #f2f2f2;
+    font-weight: bold;
+  }
+  
+  /* Bill Cards (Page 4) */
+  .bill-card {
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    padding: 15px;
+    margin-bottom: 20px;
+    background-color: white;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+  }
+  
+  /* Responsive Design */
+  @media (max-width: 600px) {
+    body {
+      padding: 15px;
+    }
+  
+    nav a {
+      display: block;
+      margin: 8px 0;
+    }
+  
+    table, th, td {
+      font-size: 14px;
+    }
+  
+    button {
+      width: 100%;
+      margin-bottom: 10px;
+    }
+  }
+  
+  /* Print View */
+  @media print {
+    nav, input, button {
+      display: none;
+    }
+  
+    body {
+      color: black;
+      background: white;
+      padding: 0;
+    }
+  
+    table {
+      box-shadow: none;
+    }
+  
+    .bill-card {
+      border: none;
+      box-shadow: none;
+      padding: 0;
+    }
+  
+    h2, h3 {
+      color: black;
+    }
+  }
+  

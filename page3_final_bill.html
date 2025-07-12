@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Page 3: Final Bill</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <nav>
+    <a href="page1_stock.html">Stock</a>
+    <a href="page2_create_bill.html">Create Bill</a>
+    <a href="page3_final_bill.html">Final Bill</a>
+    <a href="page4_view_bills.html">View Bills</a>
+  </nav>
+
+  <h2>🧾 Final Bill</h2>
+  <p><strong>Shop Name:</strong> <span id="shopName"></span></p>
+  <p><strong>Date:</strong> <span id="billDate"></span></p>
+  <p><strong>Time:</strong> <span id="billTime"></span></p>
+
+  <table id="finalBillTable">
+    <thead><tr><th>Item</th><th>Qty</th><th>Rate</th><th>Total</th></tr></thead>
+    <tbody></tbody>
+  </table>
+
+  <h3>Total: ₹<span id="finalTotal">0.00</span></h3>
+  <button onclick="saveBill()">💾 Save Bill and Update Stock</button>
+  <button onclick="clearBill()">❌ Cancel</button>
+
+  <script>
+    const currentBill = JSON.parse(localStorage.getItem('currentBill')) || { shopName: '', items: [] };
+    const stock = JSON.parse(localStorage.getItem('stock')) || [];
+    const now = new Date();
+
+    document.getElementById("shopName").textContent = currentBill.shopName;
+    document.getElementById("billDate").textContent = now.toLocaleDateString();
+    document.getElementById("billTime").textContent = now.toLocaleTimeString();
+
+    const tbody = document.querySelector("#finalBillTable tbody");
+    let total = 0;
+    currentBill.items.forEach(item => {
+      total += item.total;
+      tbody.innerHTML += `<tr>
+        <td>${item.name}</td>
+        <td>${item.qty}</td>
+        <td>₹${item.price}</td>
+        <td>₹${item.total.toFixed(2)}</td>
+      </tr>`;
+    });
+    document.getElementById("finalTotal").textContent = total.toFixed(2);
+
+    function saveBill() {
+      // update stock
+      currentBill.items.forEach(i => {
+        const idx = stock.findIndex(s => s.name === i.name);
+        if (idx !== -1) {
+          stock[idx].qty -= i.qty;
+          if (stock[idx].qty < 0) stock[idx].qty = 0;
+        }
+      });
+      localStorage.setItem('stock', JSON.stringify(stock));
+
+      // save bill
+      const bills = JSON.parse(localStorage.getItem('bills')) || [];
+      bills.push({
+        shopName: currentBill.shopName,
+        date: now.toLocaleString(),
+        items: currentBill.items,
+        total: total.toFixed(2)
+      });
+      localStorage.setItem('bills', JSON.stringify(bills));
+      localStorage.removeItem('currentBill');
+      alert("✅ Bill saved and stock updated.");
+      window.location.href = "page4_view_bills.html";
+    }
+
+    function clearBill() {
+      if (confirm("Cancel this bill?")) {
+        localStorage.removeItem('currentBill');
+        window.location.href = "page2_create_bill.html";
+      }
+    }
+  </script>
+</body>
+</html>

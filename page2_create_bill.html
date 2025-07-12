@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Page 2: Create Bill</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <nav>
+    <a href="page1_stock.html">Stock</a>
+    <a href="page2_create_bill.html">Create Bill</a>
+    <a href="page3_final_bill.html">Final Bill</a>
+    <a href="page4_view_bills.html">View Bills</a>
+  </nav>
+
+  <h2>🧾 Create Bill</h2>
+  <label>Shop Name:</label>
+  <input type="text" id="shopInput" placeholder="Enter shop/customer name">
+
+  <select id="itemSelect"><option value="">Select Item</option></select>
+  <input type="number" id="billQty" placeholder="Quantity (KG)">
+  <button onclick="addToBill()">Add to Bill</button>
+
+  <table id="billTable">
+    <thead><tr><th>Item</th><th>Qty</th><th>Rate</th><th>Total</th></tr></thead>
+    <tbody></tbody>
+  </table>
+
+  <h3>Total: ₹<span id="totalAmount">0.00</span></h3>
+  <button onclick="saveTempBill()">➡️ Go to Final Bill</button>
+
+  <script>
+    const stock = JSON.parse(localStorage.getItem('stock')) || [];
+    const itemSelect = document.getElementById("itemSelect");
+    let billItems = [];
+
+    stock.forEach((item, i) => {
+      const opt = document.createElement("option");
+      opt.value = i;
+      opt.textContent = `${item.name} - ₹${item.price}`;
+      itemSelect.appendChild(opt);
+    });
+
+    function addToBill() {
+      const idx = itemSelect.value;
+      const qty = parseFloat(document.getElementById("billQty").value);
+      if (idx && qty > 0) {
+        const item = stock[idx];
+        billItems.push({
+          name: item.name,
+          price: item.price,
+          qty,
+          total: item.price * qty
+        });
+        renderBill();
+        document.getElementById("billQty").value = "";
+        itemSelect.value = "";
+      }
+    }
+
+    function renderBill() {
+      const tbody = document.querySelector("#billTable tbody");
+      tbody.innerHTML = "";
+      let total = 0;
+      billItems.forEach(i => {
+        total += i.total;
+        tbody.innerHTML += `<tr><td>${i.name}</td><td>${i.qty}</td><td>₹${i.price}</td><td>₹${i.total.toFixed(2)}</td></tr>`;
+      });
+      document.getElementById("totalAmount").textContent = total.toFixed(2);
+    }
+
+    function saveTempBill() {
+      const shopName = document.getElementById("shopInput").value.trim();
+      if (!shopName) return alert("Please enter shop name");
+      localStorage.setItem("currentBill", JSON.stringify({ shopName, items: billItems }));
+      window.location.href = "page3_final_bill.html";
+    }
+  </script>
+</body>
+</html>
