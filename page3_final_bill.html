@@ -1,84 +1,204 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Page 3: Final Bill</title>
-  <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Final Bill</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
 </head>
 <body>
-  <nav>
+  <nav class="topnav">
     <a href="page1_stock.html">Stock</a>
     <a href="page2_create_bill.html">Create Bill</a>
-    <a href="page3_final_bill.html">Final Bill</a>
+    <a href="page3_final_bill.html" class="active">Final Bill</a>
     <a href="page4_view_bills.html">View Bills</a>
+    <a href="page5_customer_info.html">Customer Info</a>
+    <a href="page6_dashboard.html">Dashboard</a>
   </nav>
 
-  <h2>🧾 Final Bill</h2>
-  <p><strong>Shop Name:</strong> <span id="shopName"></span></p>
-  <p><strong>Date:</strong> <span id="billDate"></span></p>
-  <p><strong>Time:</strong> <span id="billTime"></span></p>
+  <div class="container">
+    <h1 style="text-align:center;">Final Bill Summary</h1>
+    <h3 style="text-align:center;">Invoice No: <span id="invoiceDisplay"></span></h3>
 
-  <table id="finalBillTable">
-    <thead><tr><th>Item</th><th>Qty</th><th>Rate</th><th>Total</th></tr></thead>
-    <tbody></tbody>
-  </table>
+    <div style="display:flex; justify-content: space-between; margin-top: 30px;">
+      <div>
+        <h3>Distributor Details</h3>
+        <p><strong>Dhall Distributor Pvt Ltd</strong><br>
+        123 Dhall Street, Tamil Nadu, India<br>
+        GST No: 29ABCDE1234F1Z5</p>
+      </div>
 
-  <h3>Total: ₹<span id="finalTotal">0.00</span></h3>
-  <button onclick="saveBill()">💾 Save Bill and Update Stock</button>
-  <button onclick="clearBill()">❌ Cancel</button>
+      <div>
+        <h3>Customer Details</h3>
+        <p id="customerDetails"></p>
+      </div>
+    </div>
+
+    <p><strong>Date:</strong> <span id="billDate"></span></p>
+
+    <table>
+      <thead>
+        <tr>
+          <th>HSN</th>
+          <th>Item</th>
+          <th>Qty</th>
+          <th>Rate</th>
+          <th>CGST</th>
+          <th>SGST</th>
+          <th>Total</th>
+        </tr>
+      </thead>
+      <tbody id="billItems"></tbody>
+    </table>
+
+    <h2 style="text-align:center; margin-top: 20px;" id="grandTotal">Grand Total: Rs. 0.00</h2>
+
+    <button onclick="downloadPDF()" class="btn btn-download">⬇️ Download PDF</button>
+  </div>
 
   <script>
-    const currentBill = JSON.parse(localStorage.getItem('currentBill')) || { shopName: '', items: [] };
-    const stock = JSON.parse(localStorage.getItem('stock')) || [];
-    const now = new Date();
+    const distributor = {
+      name: "Dhall Distributor Pvt Ltd",
+      address: "123 Dhall Street, Tamil Nadu, India",
+      gst: "29ABCDE1234F1Z5"
+    };
 
-    document.getElementById("shopName").textContent = currentBill.shopName;
-    document.getElementById("billDate").textContent = now.toLocaleDateString();
-    document.getElementById("billTime").textContent = now.toLocaleTimeString();
+    const customer = JSON.parse(localStorage.getItem("selectedCustomer")) || {};
+    const billItems = JSON.parse(localStorage.getItem("finalBillItems")) || [];
+    const cgstRate = parseFloat(localStorage.getItem("selectedCGST") || 2.5);
+    const sgstRate = parseFloat(localStorage.getItem("selectedSGST") || 2.5);
+    const date = new Date().toLocaleDateString();
 
-    const tbody = document.querySelector("#finalBillTable tbody");
-    let total = 0;
-    currentBill.items.forEach(item => {
-      total += item.total;
-      tbody.innerHTML += `<tr>
+    let invoiceNumber = parseInt(localStorage.getItem("invoiceNumber") || "0");
+    let invoiceStr = invoiceNumber.toString().padStart(3, "0");
+    document.getElementById("invoiceDisplay").textContent = invoiceStr;
+
+    document.getElementById("billDate").textContent = date;
+    document.getElementById("customerDetails").innerHTML = `
+      <strong>${customer.name || ""}</strong><br>
+      ${customer.address || ""}<br>
+      GST No: ${customer.gst || "N/A"}
+    `;
+
+    const tbody = document.getElementById("billItems");
+    let grandTotal = 0;
+
+    billItems.forEach(item => {
+      const amount = item.qty * item.price;
+      const cgst = (cgstRate / 100) * amount;
+      const sgst = (sgstRate / 100) * amount;
+      const total = amount + cgst + sgst;
+      grandTotal += total;
+
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td>${item.hsn || "1001"}</td>
         <td>${item.name}</td>
         <td>${item.qty}</td>
-        <td>₹${item.price}</td>
-        <td>₹${item.total.toFixed(2)}</td>
-      </tr>`;
+        <td>Rs. ${parseFloat(item.price).toFixed(2)}</td>
+        <td>Rs. ${cgst.toFixed(2)}</td>
+        <td>Rs. ${sgst.toFixed(2)}</td>
+        <td>Rs. ${total.toFixed(2)}</td>
+      `;
+      tbody.appendChild(row);
     });
-    document.getElementById("finalTotal").textContent = total.toFixed(2);
 
-    function saveBill() {
-      // update stock
-      currentBill.items.forEach(i => {
-        const idx = stock.findIndex(s => s.name === i.name);
-        if (idx !== -1) {
-          stock[idx].qty -= i.qty;
-          if (stock[idx].qty < 0) stock[idx].qty = 0;
+    document.getElementById("grandTotal").innerText = `Grand Total: Rs. ${grandTotal.toFixed(2)}`;
+
+    // ✅ Save final bill into localStorage
+    const finalBill = {
+      invoice: invoiceStr,
+      date: new Date().toISOString(),
+      customer: customer,
+      items: billItems,
+      cgstRate: cgstRate,
+      sgstRate: sgstRate,
+      subtotal: billItems.reduce((sum, item) => sum + item.qty * item.price, 0),
+      grandTotal: grandTotal
+    };
+
+    let allBills = JSON.parse(localStorage.getItem("finalBill")) || [];
+    allBills.push(finalBill);
+    localStorage.setItem("finalBill", JSON.stringify(allBills));
+
+    localStorage.setItem("invoiceNumber", (invoiceNumber + 1).toString());
+
+    function downloadPDF() {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+
+      const tableRows = billItems.map(item => {
+        const amount = item.qty * item.price;
+        const cgst = (cgstRate / 100) * amount;
+        const sgst = (sgstRate / 100) * amount;
+        const total = amount + cgst + sgst;
+        return [
+          item.hsn || "1001",
+          item.name,
+          item.qty.toString(),
+          "Rs. " + parseFloat(item.price).toFixed(2),
+          "Rs. " + cgst.toFixed(2),
+          "Rs. " + sgst.toFixed(2),
+          "Rs. " + total.toFixed(2)
+        ];
+      });
+
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(16);
+      doc.text("Final Bill Summary", 105, 15, { align: "center" });
+      doc.setFontSize(12);
+      doc.text("Invoice No: " + invoiceStr, 160, 15);
+
+      doc.setFontSize(11);
+      doc.setFont("helvetica", "bold");
+      doc.text("Distributor Details", 10, 30);
+      doc.setFont("helvetica", "normal");
+      doc.text(distributor.name, 10, 36);
+      doc.text(distributor.address, 10, 42);
+      doc.text("GST No: " + distributor.gst, 10, 48);
+
+      doc.setFont("helvetica", "bold");
+      doc.text("Customer Details", 10, 60);
+      doc.setFont("helvetica", "normal");
+      doc.text(customer.name || "", 10, 66);
+      doc.text(customer.address || "", 10, 72);
+      doc.text("GST No: " + (customer.gst || "N/A"), 10, 78);
+      doc.setFont("helvetica", "bold");
+      doc.text("Date: " + date, 10, 88);
+
+      doc.autoTable({
+        startY: 95,
+        head: [["HSN", "Item", "Qty", "Rate", "CGST", "SGST", "Total"]],
+        body: tableRows,
+        styles: {
+          halign: "center",
+          valign: "middle",
+          fontSize: 10,
+          textColor: [0, 0, 0],
+        },
+        headStyles: {
+          fillColor: [0, 123, 255],
+          textColor: 255,
+          fontStyle: "bold",
+        },
+        alternateRowStyles: {
+          fillColor: [245, 245, 245]
+        },
+        theme: 'grid',
+        willDrawCell: function (data) {
+          data.cell.styles.cellPadding = 3;
         }
       });
-      localStorage.setItem('stock', JSON.stringify(stock));
 
-      // save bill
-      const bills = JSON.parse(localStorage.getItem('bills')) || [];
-      bills.push({
-        shopName: currentBill.shopName,
-        date: now.toLocaleString(),
-        items: currentBill.items,
-        total: total.toFixed(2)
-      });
-      localStorage.setItem('bills', JSON.stringify(bills));
-      localStorage.removeItem('currentBill');
-      alert("✅ Bill saved and stock updated.");
-      window.location.href = "page4_view_bills.html";
-    }
+      const finalY = doc.lastAutoTable.finalY + 10;
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(14);
+      doc.text(`Grand Total: Rs. ${grandTotal.toFixed(2)}`, 105, finalY, { align: "center" });
 
-    function clearBill() {
-      if (confirm("Cancel this bill?")) {
-        localStorage.removeItem('currentBill');
-        window.location.href = "page2_create_bill.html";
-      }
+      const fileName = `Invoice_${invoiceStr}_Bill_${date.replaceAll("/", "-")}.pdf`;
+      doc.save(fileName);
     }
   </script>
 </body>

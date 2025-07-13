@@ -1,78 +1,179 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Page 2: Create Bill</title>
-  <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Create Bill</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <nav>
+  <nav class="topnav">
     <a href="page1_stock.html">Stock</a>
-    <a href="page2_create_bill.html">Create Bill</a>
+    <a href="page2_create_bill.html" class="active">Create Bill</a>
     <a href="page3_final_bill.html">Final Bill</a>
     <a href="page4_view_bills.html">View Bills</a>
+    <a href="page5_customer_info.html">Customer Info</a>
+    <a href="page6_dashboard.html">Dashboard</a>
   </nav>
 
-  <h2>🧾 Create Bill</h2>
-  <label>Shop Name:</label>
-  <input type="text" id="shopInput" placeholder="Enter shop/customer name">
+  <div class="container">
+    <h2>Create New Bill</h2>
 
-  <select id="itemSelect"><option value="">Select Item</option></select>
-  <input type="number" id="billQty" placeholder="Quantity (KG)">
-  <button onclick="addToBill()">Add to Bill</button>
+    <label for="customerSelect">Select Customer:</label>
+    <select id="customerSelect">
+      <option value="">Select Customer</option>
+    </select>
 
-  <table id="billTable">
-    <thead><tr><th>Item</th><th>Qty</th><th>Rate</th><th>Total</th></tr></thead>
-    <tbody></tbody>
-  </table>
+    <label for="itemSelect">Select Item from Stock:</label>
+    <select id="itemSelect">
+      <option value="">Select Item</option>
+    </select>
 
-  <h3>Total: ₹<span id="totalAmount">0.00</span></h3>
-  <button onclick="saveTempBill()">➡️ Go to Final Bill</button>
+    <label for="quantityInput">Quantity (kg):</label>
+    <input type="number" id="quantityInput" min="1" placeholder="Enter quantity" />
+
+    <label for="cgstSelect">CGST Rate:</label>
+    <select id="cgstSelect">
+      <option value="2.5">2.5%</option>
+      <option value="9">9%</option>
+    </select>
+
+    <label for="sgstSelect">SGST Rate:</label>
+    <select id="sgstSelect">
+      <option value="2.5">2.5%</option>
+      <option value="9">9%</option>
+    </select>
+
+    <button onclick="addItemToBill()">Add Item</button>
+
+    <table>
+      <thead>
+        <tr>
+          <th>HSN</th>
+          <th>Item</th>
+          <th>Qty</th>
+          <th>Price</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="billTableBody"></tbody>
+    </table>
+
+    <button onclick="finalizeBill()">Finalize Bill</button>
+  </div>
 
   <script>
-    const stock = JSON.parse(localStorage.getItem('stock')) || [];
-    const itemSelect = document.getElementById("itemSelect");
     let billItems = [];
 
-    stock.forEach((item, i) => {
-      const opt = document.createElement("option");
-      opt.value = i;
-      opt.textContent = `${item.name} - ₹${item.price}`;
-      itemSelect.appendChild(opt);
-    });
-
-    function addToBill() {
-      const idx = itemSelect.value;
-      const qty = parseFloat(document.getElementById("billQty").value);
-      if (idx && qty > 0) {
-        const item = stock[idx];
-        billItems.push({
-          name: item.name,
-          price: item.price,
-          qty,
-          total: item.price * qty
-        });
-        renderBill();
-        document.getElementById("billQty").value = "";
-        itemSelect.value = "";
-      }
-    }
-
-    function renderBill() {
-      const tbody = document.querySelector("#billTable tbody");
-      tbody.innerHTML = "";
-      let total = 0;
-      billItems.forEach(i => {
-        total += i.total;
-        tbody.innerHTML += `<tr><td>${i.name}</td><td>${i.qty}</td><td>₹${i.price}</td><td>₹${i.total.toFixed(2)}</td></tr>`;
+    window.onload = function () {
+      // Load stock
+      const stock = JSON.parse(localStorage.getItem("stock")) || [];
+      const itemSelect = document.getElementById("itemSelect");
+      itemSelect.innerHTML = '<option value="">Select Item</option>';
+      stock.forEach((item, index) => {
+        const option = document.createElement("option");
+        option.value = index;
+        option.textContent = `${item.name} (${item.qty} kg available)`;
+        itemSelect.appendChild(option);
       });
-      document.getElementById("totalAmount").textContent = total.toFixed(2);
+
+      // Load customers
+      const customers = JSON.parse(localStorage.getItem("customers")) || [];
+      const customerSelect = document.getElementById("customerSelect");
+      customerSelect.innerHTML = '<option value="">Select Customer</option>';
+      customers.forEach((cust, index) => {
+        const option = document.createElement("option");
+        option.value = index;
+        option.textContent = `${cust.name} (${cust.gst})`;
+        customerSelect.appendChild(option);
+      });
+    };
+
+    function addItemToBill() {
+      const stock = JSON.parse(localStorage.getItem("stock")) || [];
+      const itemIndex = document.getElementById("itemSelect").value;
+      const qty = parseFloat(document.getElementById("quantityInput").value);
+
+      if (itemIndex === "" || isNaN(qty) || qty <= 0) {
+        alert("Please select an item and enter valid quantity.");
+        return;
+      }
+
+      const selectedItem = stock[itemIndex];
+      if (qty > selectedItem.qty) {
+        alert("Insufficient stock!");
+        return;
+      }
+
+      // Reduce stock locally
+      selectedItem.qty -= qty;
+      stock[itemIndex] = selectedItem;
+      localStorage.setItem("stock", JSON.stringify(stock));
+
+      // Add to bill
+      billItems.push({
+        hsn: selectedItem.hsn || "1001",
+        name: selectedItem.name,
+        qty: qty,
+        price: selectedItem.price
+      });
+
+      renderBillTable();
     }
 
-    function saveTempBill() {
-      const shopName = document.getElementById("shopInput").value.trim();
-      if (!shopName) return alert("Please enter shop name");
-      localStorage.setItem("currentBill", JSON.stringify({ shopName, items: billItems }));
+    function renderBillTable() {
+      const table = document.getElementById("billTableBody");
+      table.innerHTML = "";
+      billItems.forEach((item, index) => {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${item.hsn}</td>
+          <td>${item.name}</td>
+          <td>${item.qty}</td>
+          <td>${item.price}</td>
+          <td><button onclick="removeItem(${index})">Delete</button></td>
+        `;
+        table.appendChild(row);
+      });
+    }
+
+    function removeItem(index) {
+      const stock = JSON.parse(localStorage.getItem("stock")) || [];
+      const removed = billItems.splice(index, 1)[0];
+
+      // Restore stock
+      const stockItem = stock.find(item => item.name === removed.name);
+      if (stockItem) stockItem.qty += removed.qty;
+      localStorage.setItem("stock", JSON.stringify(stock));
+
+      renderBillTable();
+    }
+
+    function finalizeBill() {
+      if (billItems.length === 0) {
+        alert("Please add items to bill.");
+        return;
+      }
+
+      const customerIndex = document.getElementById("customerSelect").value;
+      if (customerIndex === "") {
+        alert("Please select a customer.");
+        return;
+      }
+
+      const customers = JSON.parse(localStorage.getItem("customers")) || [];
+      const selectedCustomer = customers[customerIndex];
+
+      const cgst = document.getElementById("cgstSelect").value;
+      const sgst = document.getElementById("sgstSelect").value;
+
+      // Save for final bill
+      localStorage.setItem("finalBillItems", JSON.stringify(billItems));
+      localStorage.setItem("selectedCustomer", JSON.stringify(selectedCustomer));
+      localStorage.setItem("selectedCGST", cgst);
+      localStorage.setItem("selectedSGST", sgst);
+
+      // Go to final bill page
       window.location.href = "page3_final_bill.html";
     }
   </script>

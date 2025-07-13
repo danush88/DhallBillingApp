@@ -1,146 +1,146 @@
-/* Global Reset */
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+/* GENERAL STYLES */
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #f3f4f6;
+  color: #333;
+}
+
+.container {
+  max-width: 900px;
+  margin: auto;
+  padding: 20px;
+  background: #ffffff;
+  box-shadow: 0 0 10px rgba(0,0,0,0.05);
+  margin-top: 20px;
+  border-radius: 8px;
+}
+
+/* NAVIGATION BAR */
+.topnav {
+  background-color: #f8f9fa;
+  padding: 10px 0;
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  border-bottom: 2px solid #ccc;
+}
+
+.topnav a {
+  background-color: #007bff;
+  color: white;
+  padding: 10px 18px;
+  margin: 5px;
+  text-align: center;
+  text-decoration: none;
+  font-weight: bold;
+  border-radius: 6px;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.topnav a:hover {
+  background-color: #0056b3;
+  transform: scale(1.05);
+}
+
+.topnav a.active {
+  background-color: #28a745;
+  color: white;
+}
+
+/* INPUTS AND LABELS */
+input, select, button {
+  display: block;
+  margin: 10px 0;
+  padding: 10px;
+  width: 100%;
+  max-width: 400px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  box-sizing: border-box;
+}
+
+input:focus, select:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 5px rgba(0,123,255,0.5);
+}
+
+label {
+  font-weight: bold;
+  margin-top: 15px;
+}
+
+/* BUTTONS */
+button {
+  background-color: #28a745;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+  border: none;
+  transition: background-color 0.3s ease;
+}
+
+button:hover {
+  background-color: #218838;
+}
+
+/* TABLES */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+  font-size: 15px;
+}
+
+th, td {
+  padding: 10px;
+  text-align: center;
+  border-bottom: 1px solid #ddd;
+}
+
+th {
+  background-color: #007bff;
+  color: white;
+}
+
+tr:hover {
+  background-color: #f1f1f1;
+}
+
+/* RESPONSIVE */
+@media (max-width: 600px) {
+  .topnav {
+    flex-direction: column;
   }
-  
-  /* Page Layout */
-  body {
-    font-family: 'Segoe UI', sans-serif;
-    background-color: #f9f9f9;
-    color: #333;
-    padding: 20px;
-    line-height: 1.6;
+
+  input, select, button {
+    width: 100%;
   }
-  
-  /* Navigation Bar */
-  nav {
-    margin-bottom: 20px;
-    background-color: #e0f0ff;
-    padding: 12px 15px;
-    border-radius: 8px;
+
+  table, thead, tbody, th, td, tr {
+    display: block;
   }
-  
-  nav a {
-    margin-right: 15px;
-    text-decoration: none;
-    color: #007bff;
-    font-weight: 600;
-  }
-  
-  nav a:hover {
-    text-decoration: underline;
-  }
-  
-  /* Headings */
-  h2 {
+
+  tr {
     margin-bottom: 15px;
-    color: #222;
   }
-  
-  /* Inputs and Buttons */
-  input, select {
-    padding: 10px;
-    margin: 5px 0 10px 0;
-    font-size: 16px;
-    border: 1px solid #ccc;
-    border-radius: 6px;
-    width: 100%;
-    max-width: 400px;
+
+  td, th {
+    text-align: right;
+    padding-left: 50%;
+    position: relative;
   }
-  
-  button {
-    padding: 10px 16px;
-    margin-top: 10px;
-    background-color: #28a745;
-    color: white;
-    border: none;
-    border-radius: 6px;
-    font-size: 15px;
-    cursor: pointer;
-    margin-right: 10px;
-  }
-  
-  button:hover {
-    background-color: #218838;
-  }
-  
-  /* Tables */
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 10px;
-    background-color: #fff;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-  }
-  
-  th, td {
-    padding: 10px;
-    border: 1px solid #ddd;
+
+  td::before, th::before {
+    content: attr(data-label);
+    position: absolute;
+    left: 10px;
+    width: 45%;
+    white-space: nowrap;
     text-align: left;
-  }
-  
-  th {
-    background-color: #f2f2f2;
     font-weight: bold;
   }
-  
-  /* Bill Cards (Page 4) */
-  .bill-card {
-    border: 1px solid #ccc;
-    border-radius: 10px;
-    padding: 15px;
-    margin-bottom: 20px;
-    background-color: white;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-  }
-  
-  /* Responsive Design */
-  @media (max-width: 600px) {
-    body {
-      padding: 15px;
-    }
-  
-    nav a {
-      display: block;
-      margin: 8px 0;
-    }
-  
-    table, th, td {
-      font-size: 14px;
-    }
-  
-    button {
-      width: 100%;
-      margin-bottom: 10px;
-    }
-  }
-  
-  /* Print View */
-  @media print {
-    nav, input, button {
-      display: none;
-    }
-  
-    body {
-      color: black;
-      background: white;
-      padding: 0;
-    }
-  
-    table {
-      box-shadow: none;
-    }
-  
-    .bill-card {
-      border: none;
-      box-shadow: none;
-      padding: 0;
-    }
-  
-    h2, h3 {
-      color: black;
-    }
-  }
-  
+}

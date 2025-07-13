@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Customer Info</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <nav class="topnav">
+    <a href="page1_stock.html">Stock</a>
+    <a href="page2_create_bill.html">Create Bill</a>
+    <a href="page3_final_bill.html">Final Bill</a>
+    <a href="page4_view_bills.html">View Bills</a>
+    <a href="page5_customer_info.html" class="active">Customer Info</a>
+    <a href="page6_dashboard.html">Dashboard</a>
+  </nav>
+
+  <div class="container">
+    <h2>Customer Information</h2>
+
+    <label for="customerName">Customer Name:</label>
+    <input type="text" id="customerName" placeholder="Enter shop/customer name" />
+
+    <label for="customerAddress">Address:</label>
+    <input type="text" id="customerAddress" placeholder="Enter address" />
+
+    <label for="customerGST">GST No:</label>
+    <input type="text" id="customerGST" placeholder="Enter GST number" />
+
+    <button onclick="addCustomer()">➕ Add Customer</button>
+
+    <h3>Saved Customers:</h3>
+    <ul id="customerList"></ul>
+  </div>
+
+  <script>
+    function addCustomer() {
+      const name = document.getElementById("customerName").value.trim();
+      const address = document.getElementById("customerAddress").value.trim();
+      const gst = document.getElementById("customerGST").value.trim();
+
+      if (!name || !address || !gst) {
+        alert("Please fill all fields.");
+        return;
+      }
+
+      let customers = JSON.parse(localStorage.getItem("customers")) || [];
+
+      customers.push({ name, address, gst });
+
+      localStorage.setItem("customers", JSON.stringify(customers));
+      document.getElementById("customerName").value = "";
+      document.getElementById("customerAddress").value = "";
+      document.getElementById("customerGST").value = "";
+
+      alert("Customer added!");
+      renderCustomerList();
+    }
+
+    function renderCustomerList() {
+      const list = document.getElementById("customerList");
+      const customers = JSON.parse(localStorage.getItem("customers")) || [];
+      list.innerHTML = "";
+      customers.forEach((cust, index) => {
+        const li = document.createElement("li");
+        li.innerHTML = `<strong>${cust.name}</strong> - ${cust.address}, GST: ${cust.gst}`;
+        list.appendChild(li);
+      });
+    }
+
+    window.onload = renderCustomerList;
+  </script>
+</body>
+</html>

@@ -1,160 +1,113 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Page 1: Manage Stock</title>
-  <link rel="stylesheet" href="style.css">
-  <style>
-    input {
-      padding: 8px;
-      margin-bottom: 10px;
-      width: 100%;
-      max-width: 300px;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 15px;
-    }
-    th, td {
-      border: 1px solid #ccc;
-      padding: 8px;
-      text-align: left;
-    }
-    th {
-      background-color: #f8f8f8;
-    }
-    button {
-      margin: 4px;
-      padding: 6px 12px;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-    .add-btn { background: green; color: white; }
-    .reduce-btn { background: orange; color: white; }
-    .delete-btn { background: red; color: white; }
-    .update-btn { background: #007bff; color: white; }
-  </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Stock Management</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-
-  <nav>
+  <nav class="topnav">
     <a href="page1_stock.html">Stock</a>
     <a href="page2_create_bill.html">Create Bill</a>
     <a href="page3_final_bill.html">Final Bill</a>
     <a href="page4_view_bills.html">View Bills</a>
+    <a href="page5_customer_info.html">Customer Info</a>
+    <a href="page6_dashboard.html">Dashboard</a>
   </nav>
 
-  <h2>📦 Stock Management</h2>
+  <div class="container">
+    <h1>📦 Manage Stock</h1>
 
-  <h3>Add or Update Stock</h3>
-  <input type="text" id="itemName" placeholder="Item name">
-  <input type="number" id="itemQty" placeholder="Quantity (kg)">
-  <input type="number" id="itemPrice" placeholder="Price per kg (₹)">
-  <button onclick="addOrUpdateStock()">➕ Add / Update</button>
+    <label for="itemName">Item Name:</label>
+    <input type="text" id="itemName" placeholder="e.g. Toor Dal" />
 
-  <h3>📋 Current Stock</h3>
-  <table id="stockTable">
-    <thead>
-      <tr><th>Item</th><th>Qty (kg)</th><th>Price (₹/kg)</th><th>Actions</th></tr>
-    </thead>
-    <tbody></tbody>
-  </table>
+    <label for="itemHSN">HSN Code:</label>
+    <input type="text" id="itemHSN" placeholder="e.g. 1001" />
+
+    <label for="itemQty">Quantity (in kg):</label>
+    <input type="number" id="itemQty" placeholder="e.g. 100" />
+
+    <label for="itemPrice">Price (₹/kg):</label>
+    <input type="number" id="itemPrice" placeholder="e.g. 120" />
+
+    <button onclick="addStock()" class="btn btn-add">➕ Add Item</button>
+
+    <h2>Current Stock</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>HSN</th>
+          <th>Item</th>
+          <th>Qty</th>
+          <th>Price (₹/kg)</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="stockTableBody"></tbody>
+    </table>
+  </div>
 
   <script>
-    function loadStock() {
+    function getStock() {
       return JSON.parse(localStorage.getItem("stock")) || [];
     }
 
-    function saveStock(stock) {
+    function setStock(stock) {
       localStorage.setItem("stock", JSON.stringify(stock));
     }
 
+    function addStock() {
+      const name = document.getElementById("itemName").value.trim();
+      const hsn = document.getElementById("itemHSN").value.trim();
+      const qty = parseFloat(document.getElementById("itemQty").value);
+      const price = parseFloat(document.getElementById("itemPrice").value);
+
+      if (!name || !hsn || isNaN(qty) || isNaN(price)) {
+        alert("Please enter valid item name, HSN, quantity and price.");
+        return;
+      }
+
+      const stock = getStock();
+      stock.push({ name, hsn, qty, price });
+      setStock(stock);
+      renderStock();
+
+      // Clear inputs
+      document.getElementById("itemName").value = '';
+      document.getElementById("itemHSN").value = '';
+      document.getElementById("itemQty").value = '';
+      document.getElementById("itemPrice").value = '';
+    }
+
+    function deleteStock(index) {
+      const stock = getStock();
+      stock.splice(index, 1);
+      setStock(stock);
+      renderStock();
+    }
+
     function renderStock() {
-      const stock = loadStock();
-      const tbody = document.querySelector("#stockTable tbody");
+      const stock = getStock();
+      const tbody = document.getElementById("stockTableBody");
       tbody.innerHTML = "";
 
-      stock.forEach((item, index) => {
+      stock.forEach((item, i) => {
         const row = document.createElement("tr");
         row.innerHTML = `
+          <td>${item.hsn}</td>
           <td>${item.name}</td>
-          <td>${item.qty}</td>
+          <td>${item.qty} kg</td>
           <td>₹${item.price}</td>
           <td>
-            <button class="add-btn" onclick="modifyQty(${index}, 'add')">➕</button>
-            <button class="reduce-btn" onclick="modifyQty(${index}, 'reduce')">➖</button>
-            <button class="update-btn" onclick="updatePrice(${index})">💰 Update Price</button>
-            <button class="delete-btn" onclick="deleteItem(${index})">🗑️</button>
+            <button onclick="deleteStock(${i})" class="btn btn-delete">🗑 Delete</button>
           </td>
         `;
         tbody.appendChild(row);
       });
     }
 
-    function addOrUpdateStock() {
-      const name = document.getElementById("itemName").value.trim();
-      const qty = parseFloat(document.getElementById("itemQty").value);
-      const price = parseFloat(document.getElementById("itemPrice").value);
-
-      if (!name || isNaN(qty) || qty <= 0 || isNaN(price) || price <= 0) {
-        alert("Enter valid item name, quantity, and price.");
-        return;
-      }
-
-      const stock = loadStock();
-      const existing = stock.find(item => item.name.toLowerCase() === name.toLowerCase());
-
-      if (existing) {
-        existing.qty += qty;
-        existing.price = price; // Update price on every addition
-      } else {
-        stock.push({ name, qty, price });
-      }
-
-      saveStock(stock);
-      document.getElementById("itemName").value = "";
-      document.getElementById("itemQty").value = "";
-      document.getElementById("itemPrice").value = "";
-      renderStock();
-    }
-
-    function modifyQty(index, action) {
-      const value = parseFloat(prompt(`Enter amount to ${action === 'add' ? 'add' : 'reduce'}:`));
-      if (isNaN(value) || value <= 0) return;
-
-      const stock = loadStock();
-      if (action === "add") {
-        stock[index].qty += value;
-      } else {
-        stock[index].qty = Math.max(0, stock[index].qty - value);
-      }
-
-      saveStock(stock);
-      renderStock();
-    }
-
-    function updatePrice(index) {
-      const value = parseFloat(prompt("Enter new price per kg:"));
-      if (isNaN(value) || value <= 0) return;
-
-      const stock = loadStock();
-      stock[index].price = value;
-      saveStock(stock);
-      renderStock();
-    }
-
-    function deleteItem(index) {
-      if (confirm("Are you sure you want to delete this item?")) {
-        const stock = loadStock();
-        stock.splice(index, 1);
-        saveStock(stock);
-        renderStock();
-      }
-    }
-
-    renderStock();
+    document.addEventListener("DOMContentLoaded", renderStock);
   </script>
 </body>
 </html>
