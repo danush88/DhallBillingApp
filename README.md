@@ -1,55 +1,34 @@
 Dhall Billing App
-
 🧾 Smart Billing & Stock Management System for Dhall & Rice Stores
-
+________________________________________
 🌟 Features
-
 Stock Management – Add, update, and track available items
-
 Automatic Stock Deduction – Stock updates instantly after billing
-
 Customer Management – Save and select customers while billing
-
 Professional Invoice – Clean bill layout with GST details
-
 Monthly Bill Summary – View grouped bills by month
-
 Dashboard Analytics – Sales overview and insights
-
 PDF Export – Download printable invoice copies
-
 Fully Browser-Based – No backend required (uses localStorage)
-
+________________________________________
 🚀 Live Demo
-
 🔗 https://danush88.github.io/DhallBillingApp/
-
+________________________________________
 📋 How to Use
-
 Add stock items in the Stock page
-
 Add customer details in Customer Info
-
 Create a new bill in Create Bill
-
 View final invoice in Final Bill
-
 Track all bills in View Bills
-
 Check sales insights in Dashboard
-
+________________________________________
 🔧 Technologies Used
-
 HTML5
-
 CSS3
-
 JavaScript (ES6)
-
 localStorage API
-
 GitHub Pages
-
+________________________________________
 📊 Project Structure
 DhallBillingApp/
 ├── index.html
@@ -60,8 +39,9 @@ DhallBillingApp/
 ├── CustomerInfo.html
 ├── Dashboard.html
 └── README.md
+________________________________________
 📝 License
-
 This project is licensed under the MIT License.
-
+________________________________________
 ⭐ If you found this project useful, consider giving it a star!
+
